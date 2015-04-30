@@ -18,6 +18,10 @@ namespace PeerCache
         static object _lock = new object();
 
         private UdpBroadcastListener _udpListener;
+        private UdpCacheNotifier _udpClient;
+
+        private readonly string _peerId;
+        private readonly string _regionName;
 
         public static ICacheService Default
         {
@@ -45,9 +49,14 @@ namespace PeerCache
         public PeerMemoryCache(string regionName, NameValueCollection config) 
         {
             _cache = MemoryCache.Default;
+            _peerId = Guid.NewGuid().ToString();
+            _regionName = regionName;
 
             _udpListener = new UdpBroadcastListener(11885);
+            _udpClient = new UdpCacheNotifier(11885, _peerId);
+
             _udpListener.Init();
+            _udpClient.Init();
 
             _udpListener.Received += _udpListener_Received;
         }
@@ -55,6 +64,7 @@ namespace PeerCache
         private void _udpListener_Received(object sender, GenericEventArgs<byte[]> e)
         {
             var message = Encoding.ASCII.GetString(e.Value);
+            Trace.TraceInformation("Peer cache received message: {0}", message);
         }
 
         private PeerCacheItemPolicy CreateCachePolicy(CacheItemPolicy cacheDetails)
@@ -68,6 +78,7 @@ namespace PeerCache
         private void OnLocalCacheChanged(string key, string reason)
         {
             Trace.TraceWarning("Peer cache detected local cache change. key={0}, reason={1}", key, reason);
+            _udpClient.InvalidateItem(key, _regionName);
         }
 
         public void Add<T>(string key, T item, CacheItemPolicy cacheDetails)
