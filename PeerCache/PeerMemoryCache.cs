@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
 using System.Threading.Tasks;
+using PeerCache.Messages;
 
 namespace PeerCache
 {
@@ -22,6 +24,8 @@ namespace PeerCache
 
         private readonly string _peerId;
         private readonly string _regionName;
+
+        private Dictionary<string, bool> _supressNotify;
 
         public static ICacheService Default
         {
@@ -52,21 +56,45 @@ namespace PeerCache
             _peerId = Guid.NewGuid().ToString();
             _regionName = regionName;
 
+            _supressNotify = new Dictionary<string, bool>();
+
             _udpListener = new UdpBroadcastListener(11885);
             _udpClient = new UdpCacheNotifier(11885, _peerId);
 
             _udpListener.Init();
             _udpClient.Init();
-
+            
             _udpListener.Received += _udpListener_Received;
         }
 
         private void _udpListener_Received(object sender, GenericEventArgs<byte[]> e)
         {
-            var message = Encoding.ASCII.GetString(e.Value);
-            Trace.TraceInformation("Peer cache received message: {0}", message);
+            var messageText = Encoding.ASCII.GetString(e.Value);
+            Trace.TraceInformation("Peer cache received message: {0}", messageText);
 
-            
+            var message = JsonConvert.DeserializeObject<Messages.GenericMessage>(messageText);
+            HandleMessage(message);            
+
+        }
+
+        private void HandleMessage(GenericMessage message)
+        {
+            switch (message.MessageType)
+            {
+                case MessageConstants.MessageTypes.PeerBroadcast:
+                    HandlePeerBroadcastMessage(message);
+                    break;
+
+            }
+        }
+
+        private void HandlePeerBroadcastMessage(GenericMessage message)
+        {
+            var broadcastMessage = JsonConvert.DeserializeObject<Messages.PeerBroadcast>(message.MessageData);
+            if (broadcastMessage.SenderClientId != _peerId && broadcastMessage.Region == _regionName)
+            {
+                Remove(broadcastMessage.Key, true);
+            }
         }
 
         private PeerCacheItemPolicy CreateCachePolicy(CacheItemPolicy cacheDetails)
@@ -80,12 +108,14 @@ namespace PeerCache
         private void OnLocalCacheChanged(string key, string reason)
         {
             Trace.TraceWarning("Peer cache detected local cache change. key={0}, reason={1}", key, reason);
-            _udpClient.InvalidateItem(key, _regionName);
+
+            if (!_supressNotify[key])
+                _udpClient.InvalidateItem(key, _regionName);
         }
 
         public void Add<T>(string key, T item, CacheItemPolicy cacheDetails)
         {
-            
+            Remove(key);
             var ret = _cache.Add(key, item, CreateCachePolicy(cacheDetails));
 
             if (ret)
@@ -118,10 +148,19 @@ namespace PeerCache
             }
             return (T)itemInCache;
         }
-
         public void Remove(string key)
         {
+            Remove(key, false);
+        }
+
+        private void Remove(string key, bool supressNotify)
+        {
+            if (supressNotify)
+                _supressNotify[key] = true;
+
             _cache.Remove(key);
+
+            _supressNotify[key] = false;
         }
     }
 }
