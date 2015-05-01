@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using PeerCache.Messages;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,6 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static PeerCache.Messages.MessageConstants;
 
 namespace PeerCache
 {
@@ -64,12 +66,20 @@ namespace PeerCache
                 if (mUdpClient == null)
                     throw new InvalidOperationException("Invalid when connection not initialized or closed.");
 
-                PeerBroadcast message = new PeerBroadcast()
+                PeerBroadcast messageData = new PeerBroadcast()
                 {
-                    Command = "expire",
+                    Command = MessageConstants.Commands.ExpireCache,
                     Key = key,
                     SenderClientId = _clientId,
                     Region = region
+                };
+
+                GenericMessage message = new GenericMessage()
+                {
+                    MessageId = Guid.NewGuid().ToString(),
+                    MessageType = MessageTypes.PeerBroadcast,
+                    MessageData = JsonConvert.SerializeObject(messageData),
+                    SendTs = DateTime.UtcNow
                 };
 
                 var byteCommand = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(message));

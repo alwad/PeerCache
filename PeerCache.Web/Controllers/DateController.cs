@@ -13,7 +13,7 @@ namespace PeerCache.Web.Controllers
     {
         [Route("now")]
         [HttpGet]
-        [OutputCache(5)]
+        //[OutputCache(5)]
         public IHttpActionResult Now()
         {
             var cache = PeerCache.PeerMemoryCache.Default;

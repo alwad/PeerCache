@@ -65,6 +65,8 @@ namespace PeerCache
         {
             var message = Encoding.ASCII.GetString(e.Value);
             Trace.TraceInformation("Peer cache received message: {0}", message);
+
+            
         }
 
         private PeerCacheItemPolicy CreateCachePolicy(CacheItemPolicy cacheDetails)

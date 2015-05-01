@@ -48,10 +48,13 @@
   <ItemGroup>
     <Compile Include="GenericEventArgs.cs" />
     <Compile Include="ICacheService.cs" />
-    <Compile Include="PeerBroadcast.cs" />
+    <Compile Include="Messages\MessageTypes.cs" />
+    <Compile Include="Messages\GenericMessage.cs" />
+    <Compile Include="Messages\PeerAcknowledgement.cs" />
+    <Compile Include="Messages\PeerStatus.cs" />
+    <Compile Include="Messages\PeerBroadcast.cs" />
     <Compile Include="PeerCacheItemPolicy.cs" />
     <Compile Include="PeerCacheMemoryCacheMonitor.cs" />
-    <Compile Include="PeerCacheModule.cs" />
     <Compile Include="PeerMemoryCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UdpCacheNotifier.cs" />
