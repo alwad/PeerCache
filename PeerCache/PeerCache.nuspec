@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>peercache</id>
+    <version>1.0.0-alpha</version>
+    <title>PeerCache</title>
+    <authors>Alex Waddell</authors>
+    <owners>Alex Waddell</owners>
+    <projectUrl>http://github.com/alwad/peercache</projectUrl>
+    <iconUrl>http://icons.iconarchive.com/icons/aha-soft/torrent/128/peer-to-peer-icon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Peer Cache allows simple local in-memory caching while communicating cache expiration events to other server peers.</description>
+    <releaseNotes>Initial alpha package release.</releaseNotes>
+    <copyright>Copyright 2015</copyright>
+    <tags>Cache</tags>
+  </metadata>
+</package>

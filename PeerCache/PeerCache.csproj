@@ -35,6 +35,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Web" />
@@ -55,6 +56,7 @@
     <Compile Include="Messages\PeerBroadcast.cs" />
     <Compile Include="PeerCacheItemPolicy.cs" />
     <Compile Include="PeerCacheMemoryCacheMonitor.cs" />
+    <Compile Include="PeerCacheSection.cs" />
     <Compile Include="PeerMemoryCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UdpCacheNotifier.cs" />

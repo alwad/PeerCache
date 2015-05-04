@@ -31,7 +31,7 @@ namespace PeerCache
         {
             get
             {
-                lock(_lock)
+                lock (_lock)
                 {
                     if (_currentCache == null)
                         _currentCache = new PeerMemoryCache();
@@ -41,29 +41,29 @@ namespace PeerCache
             }
         }
 
-        public PeerMemoryCache() : this(null)
+        public PeerMemoryCache() : this(null, null)
         {
         }
 
-        public PeerMemoryCache(NameValueCollection config)
-            : this(DEFAULT_REGION_NAME, config)
-        {
-        }
-
-        public PeerMemoryCache(string regionName, NameValueCollection config) 
+        public PeerMemoryCache(string regionName, NameValueCollection config)
         {
             _cache = MemoryCache.Default;
             _peerId = Guid.NewGuid().ToString();
             _regionName = regionName;
 
+            var configSettings = PeerCacheSection.Instance;
+
+            if (string.IsNullOrWhiteSpace(_regionName))
+                _regionName = configSettings.RegionName;
+
             _supressNotify = new Dictionary<string, bool>();
 
-            _udpListener = new UdpBroadcastListener(11885);
-            _udpClient = new UdpCacheNotifier(11885, _peerId);
+            _udpListener = new UdpBroadcastListener(configSettings.Port);
+            _udpClient = new UdpCacheNotifier(configSettings.Port, _peerId);
 
             _udpListener.Init();
             _udpClient.Init();
-            
+
             _udpListener.Received += _udpListener_Received;
         }
 
@@ -73,7 +73,7 @@ namespace PeerCache
             Trace.TraceInformation("Peer cache received message: {0}", messageText);
 
             var message = JsonConvert.DeserializeObject<Messages.GenericMessage>(messageText);
-            HandleMessage(message);            
+            HandleMessage(message);
 
         }
 
@@ -124,7 +124,7 @@ namespace PeerCache
                 cacheDetails.ChangeMonitors.Add(monitor);
             }
         }
-        
+
         public T Get<T>(string key)
         {
             return (T)_cache[key];
